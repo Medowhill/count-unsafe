@@ -1,6 +1,12 @@
+use rustc_ast::visit::FnKind;
+use rustc_ast::NodeId;
 use std::path::PathBuf;
 
-use rustc_ast::{Block, BlockCheckMode, Extern, Item, ItemKind, Unsafe, UnsafeSource::UserProvided, visit::{walk_block, walk_crate, walk_item, Visitor}};
+use rustc_ast::{
+    visit::{walk_block, walk_crate, walk_fn, walk_item, Visitor},
+    Block, BlockCheckMode, Extern, Item, ItemKind, Unsafe,
+    UnsafeSource::UserProvided,
+};
 use rustc_session::parse::ParseSess;
 use rustc_span::{edition::Edition, Loc, Span};
 
@@ -92,18 +98,28 @@ impl<'ast> Visitor<'ast> for UnsafeCollector {
                 self.blocks.push(SpannedUnsafeBlock { span: item.span, kind: UnsafeKind::Impl })
             }
             ItemKind::Fn(_, sig, ..) if matches!(sig.header.unsafety, Unsafe::Yes(..)) => {
-                self.blocks.push(SpannedUnsafeBlock {
-                    span: item.span,
-                    kind: match sig.header.ext {
-                        Extern::Explicit(..) => UnsafeKind::Ffi,
-                        _ => UnsafeKind::Fn,
-                    },
-                })
+                // skip for visit_fn
             }
             _ => {}
         }
 
         walk_item(self, item);
+    }
+
+    fn visit_fn(&mut self, fk: FnKind<'ast>, span: Span, _: NodeId) {
+        if let Some(header) = fk.header() {
+            if let Unsafe::Yes(..) = header.unsafety {
+                self.blocks.push(SpannedUnsafeBlock {
+                    span: span,
+                    kind: match header.ext {
+                        Extern::Explicit(..) => UnsafeKind::Ffi,
+                        _ => UnsafeKind::Fn,
+                    },
+                });
+            }
+        }
+
+        walk_fn(self, fk, span);
     }
 
     fn visit_block(&mut self, b: &'ast Block) {
