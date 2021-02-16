@@ -1,10 +1,8 @@
-use rustc_ast::{VisibilityKind, visit::FnKind};
-use rustc_ast::NodeId;
 use std::path::PathBuf;
 
 use rustc_ast::{
-    visit::{walk_block, walk_crate, walk_fn, walk_item, Visitor},
-    Block, BlockCheckMode, Extern, Item, ItemKind, Unsafe,
+    visit::{walk_block, walk_crate, walk_item, Visitor},
+    Block, BlockCheckMode, Item, ItemKind, Unsafe,
     UnsafeSource::UserProvided,
 };
 use rustc_session::parse::ParseSess;
@@ -73,10 +71,7 @@ struct UnsafeBlock {
 enum UnsafeKind {
     Trait,
     Impl,
-    Fn,
-    PubFn,
     Block,
-    Ffi,
 }
 
 #[derive(Debug)]
@@ -102,25 +97,6 @@ impl<'ast> Visitor<'ast> for UnsafeCollector {
         }
 
         walk_item(self, item);
-    }
-
-    fn visit_fn(&mut self, fk: FnKind<'ast>, span: Span, _: NodeId) {
-        if let FnKind::Fn(_, _, sig, vis, _) = fk {
-            if let Unsafe::Yes(..) = sig.header.unsafety {
-                self.blocks.push(SpannedUnsafeBlock {
-                    span,
-                    kind: match sig.header.ext {
-                        Extern::Explicit(..) => UnsafeKind::Ffi,
-                        _ => match vis.kind {
-                            VisibilityKind::Inherited => UnsafeKind::Fn,
-                            _ => UnsafeKind::PubFn,
-                        }
-                    },
-                });
-            }
-        }
-
-        walk_fn(self, fk, span);
     }
 
     fn visit_block(&mut self, b: &'ast Block) {
