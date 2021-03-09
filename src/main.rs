@@ -87,11 +87,15 @@ struct UnsafeCollector {
 impl<'ast> Visitor<'ast> for UnsafeCollector {
     fn visit_item(&mut self, item: &'ast Item) {
         match &item.kind {
-            ItemKind::Trait(_, Unsafe::Yes(..), ..) => {
-                self.blocks.push(SpannedUnsafeBlock { span: item.span, kind: UnsafeKind::Trait })
+            ItemKind::Trait(b) => {
+                if let Unsafe::Yes(_) = b.1 {
+                    self.blocks.push(SpannedUnsafeBlock { span: item.span, kind: UnsafeKind::Trait })
+                }
             }
-            ItemKind::Impl { unsafety: Unsafe::Yes(..), .. } => {
-                self.blocks.push(SpannedUnsafeBlock { span: item.span, kind: UnsafeKind::Impl })
+            ItemKind::Impl(b) => {
+                if let Unsafe::Yes(_) = b.unsafety {
+                    self.blocks.push(SpannedUnsafeBlock { span: item.span, kind: UnsafeKind::Impl })
+                }
             }
             _ => {} // skip ItemKind::Fn thanks to visit_fn
         }
