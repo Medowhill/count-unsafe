@@ -113,11 +113,11 @@ impl<'ast> Visitor<'ast> for UnsafeCollector {
 }
 
 fn collect_unsafes(file: &PathBuf, sess: &ParseSess) -> Vec<SpannedUnsafeBlock> {
-    let mut collector = UnsafeCollector { blocks: Vec::new() };
-
-    let krate = rustc_parse::parse_crate_from_file(&file, &sess).unwrap();
-
-    walk_crate(&mut collector, &krate);
-
-    collector.blocks
+    if let Ok(krate) = rustc_parse::parse_crate_from_file(&file, &sess) {
+        let mut collector = UnsafeCollector { blocks: Vec::new() };
+        walk_crate(&mut collector, &krate);
+        collector.blocks
+    } else {
+        vec![]
+    }
 }
