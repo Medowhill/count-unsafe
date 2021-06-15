@@ -11,16 +11,16 @@ clap = "3.0.0-beta.2"
 
 [dependencies.rustc_parse]
 package = "rustc-ap-rustc_parse"
-version = "716.0.0"
+version = "723.0.0"
 
 [dependencies.rustc_ast]
 package = "rustc-ap-rustc_ast"
-version = "716.0.0"
+version = "723.0.0"
 
 [dependencies.rustc_session]
 package = "rustc-ap-rustc_session"
-version = "716.0.0"
+version = "723.0.0"
 
 [dependencies.rustc_span]
 package = "rustc-ap-rustc_span"
-version = "716.0.0"
+version = "723.0.0"

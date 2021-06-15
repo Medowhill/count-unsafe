@@ -36,7 +36,7 @@ fn main() -> Result<()> {
             let end = parse_sess.source_map().lookup_char_pos(ublock.span.hi());
             let kind = ublock.kind;
 
-            let filename = &start.file.name;
+            let filename = &start.file.name.prefer_local();
 
             // count sloc (excluding empty lines)
             let mut sloc = 0;
