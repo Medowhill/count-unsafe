@@ -1,10 +1,18 @@
-# `count-unsafe`
+# count-unsafe
 
-Count lines of unsafe blocks, functions, traits, trait impls in Rust.
-
-## Usage
+## Install
 
 ```sh
-count-unsafe rv6/kernel-rs/**/*.rs
+rustup update nightly && cargo +nightly install --git https://github.com/Medowhill/count-unsafe
 ```
 
+## Use
+
+```sh
+count-unsafe [dir/file]
+```
+
+```sh
+cargo clean && cargo build 2> crates
+./download-and-count.py crates
+```
